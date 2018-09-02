@@ -16,7 +16,7 @@ var filesToCache = [
 	'/index.html',
 	'/index.js',
 	'/index.css',
-	'/lib/material.js',
+	'/lib/material.min.js',
 	'/lib/material.min.css',
 	'/images/shell/check-24px.svg',
 	'/images/shell/clear-24px.svg',
@@ -84,12 +84,13 @@ self.addEventListener('activate', function(e) {
   return self.clients.claim(); //запрос принудительного контроля над клиентами
 });
 self.addEventListener('fetch', function(e) {
+	
 	let dataUrl = dataCacheNames.find(name => e.request.url.indexOf(name) > -1),
 		reqCache = dataUrl || e.request;
 	e.respondWith(
 		caches.match(reqCache).then(req => {
 				return dataUrl ? fetch(e.request).catch(() => {
 					return req
-				} ) : req || fetch(e.request);
+				}) : req || fetch(e.request).catch(()=> {console.log('Нет данных.')});
 			}))
 });

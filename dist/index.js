@@ -35,20 +35,14 @@
 		'https://api.openweathermap.org/data/2.5/forecast?id=1496747',
 		'https://api.openweathermap.org/data/2.5/forecast?id=524305',
 	];
-	appContext.dataCacheNames = [
-		'https://api.openweathermap.org/data/2.5/forecast?id=524901',
-		'https://api.openweathermap.org/data/2.5/forecast?id=2013348',
-		'https://api.openweathermap.org/data/2.5/forecast?id=1502026',
-		'https://api.openweathermap.org/data/2.5/forecast?id=1496747',
-		'https://api.openweathermap.org/data/2.5/forecast?id=524305',
-	];
 	//установка обработчиков событий на кнопки
 	document.querySelector('.appContainer').addEventListener('click', onClickButtons);
 	
 	//кэширование данных всех городов из списка при старте приложения
 	getForecast(appContext.townMetaData).then(res => { //пишем в кэш
 		//обработка только данных
-		setTownForecast(res);
+		if(res) setTownForecast(res);
+		else console.log('Нет ответа с сервиса прогнозов! Попробуйте использовать VPN.')
 	});
 	
 	function setTownForecast(res, setForecast = false) {
@@ -61,7 +55,8 @@
 						//отбор данных на 12 часов дня
 						let body = {
 							city: resJson.city, list: (resJson.list.filter((item, inx) => {
-								return (inx === 0 || (new Date().getDate() < new Date(item.dt_txt).getDate() && item.dt_txt.indexOf('12:00:00') >= 0));
+								return (inx === 0 || (new Date() < new Date(item.dt_txt) && item.dt_txt.indexOf('12:00:00') >= 0));
+
 							}))
 						};
 						//заполнение кэша
@@ -89,8 +84,11 @@
 					break;
 				case 'btn3': getForecast([appContext.townMetaData[document.querySelector('#citySelect').value]]).then(resp => {
 						//если нет карточки города, то создаем её, или обновляем данные
-							setTownForecast(resp, true);
-							document.querySelector('.addCityDialog').classList.toggle('active');
+							if(resp) {
+								setTownForecast(resp, true);
+								document.querySelector('.addCityDialog').classList.toggle('active');
+							}
+							else console.log('Нет данных с сервиса прогнозов. Попробуйте использовать VPN.')
 						});
 					break;
 				case 'btn5' : removeForecastItem(button);
@@ -115,7 +113,7 @@
 	
 	function getApiKey(){
 		return caches.match('apiKey').then(apiKey => {
-			return apiKey ? apiKey.json().then(key => key) : {apiKey : '6f0fd351626fa2fd2fb723be500cd35a'} ;
+			return apiKey ? apiKey.json().then(key => key)  : {apiKey : '6f0fd351626fa2fd2fb723be500cd35a'};
 		})
 	}
 	
